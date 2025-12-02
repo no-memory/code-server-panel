@@ -1,0 +1,14 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers-extra/features/bun:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "os-provided"
+    },
+    "ghcr.io/devcontainers/features/java:1": {},
+    "ghcr.io/devcontainers-extra/features/maven-sdkman:2": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  }
+}
