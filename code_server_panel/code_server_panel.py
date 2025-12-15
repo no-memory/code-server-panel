@@ -1,34 +1,221 @@
-"""Welcome to Reflex! This file outlines the steps to create a basic app."""
-
 import reflex as rx
-
-from rxconfig import config
 
 
 class State(rx.State):
-    """The app state."""
+    users: list[list[str]] = [
+        ["Danilo Sousa", "danilo@example.com", "Male"],
+        ["Zahra Ambessa", "zahra@example.com", "Female"],
+    ]
+
+
+class CountState(rx.State):
+    count: int = 0
+
+    @rx.event
+    def increment(self):
+        self.count += 1
+
+    @rx.event
+    def decrement(self):
+        self.count -= 1
+
+
+def counter():
+    return rx.flex(
+        rx.button(
+            "Decrement",
+            color_scheme="red",
+            on_click=CountState.decrement,
+            on_mouse_leave=CountState.decrement,
+        ),
+        rx.heading(CountState.count),
+        rx.button(
+            "Increment",
+            color_scheme="grass",
+            on_click=CountState.increment,
+            on_mouse_leave=CountState.increment,
+        ),
+        spacing="3",
+    )
+
+
+def show_user(person: list):
+    return rx.table.row(
+        rx.table.cell(person[0]),
+        rx.table.cell(person[1]),
+        rx.table.cell(person[2]),
+    )
+
+
+def sidebar_item(text: str, icon: str, href: str) -> rx.Component:
+    return rx.link(
+        rx.hstack(
+            rx.icon(icon),
+            rx.text(text, size="4"),
+            width="100%",
+            padding_x="0.5rem",
+            padding_y="0.75rem",
+            align="center",
+            style={
+                "_hover": {
+                    "bg": rx.color("accent", 4),
+                    "color": rx.color("accent", 11),
+                },
+                "border-radius": "0.5em",
+            },
+        ),
+        href=href,
+        underline="none",
+        weight="medium",
+        width="100%",
+    )
+
+
+def sidebar_items() -> rx.Component:
+    return rx.vstack(
+        sidebar_item("Dashboard", "layout-dashboard", "/#"),
+        sidebar_item("Projects", "square-library", "/#"),
+        sidebar_item("Analytics", "bar-chart-4", "/#"),
+        sidebar_item("Messages", "mail", "/#"),
+        spacing="1",
+        width="100%",
+    )
+
+
+def sidebar_top_profile() -> rx.Component:
+    return rx.box(
+        rx.desktop_only(
+            rx.vstack(
+                rx.hstack(
+                    rx.icon_button(rx.icon("user"), size="3", radius="full"),
+                    rx.vstack(
+                        rx.box(
+                            rx.text("My account", size="3", weight="bold"),
+                            rx.text("user@reflex.dev",
+                                    size="2", weight="medium"),
+                            width="100%",
+                        ),
+                        spacing="0",
+                        justify="start",
+                        width="100%",
+                    ),
+                    rx.spacer(),
+                    rx.icon_button(
+                        rx.icon("settings"),
+                        size="2",
+                        variant="ghost",
+                        color_scheme="gray",
+                    ),
+                    padding_x="0.5rem",
+                    align="center",
+                    width="100%",
+                ),
+                sidebar_items(),
+                rx.spacer(),
+                sidebar_item("Help & Support", "life-buoy", "/#"),
+                spacing="5",
+                # position="fixed",
+                # left="0px",
+                # top="0px",
+                # z_index="5",
+                padding_x="1em",
+                padding_y="1.5em",
+                bg=rx.color("accent", 3),
+                align="start",
+                height="100%",
+                # height="900px",
+                width="16em",
+            ),
+        ),
+        rx.mobile_and_tablet(
+            rx.drawer.root(
+                rx.drawer.trigger(rx.icon("align-justify", size=30)),
+                rx.drawer.overlay(z_index="5"),
+                rx.drawer.portal(
+                    rx.drawer.content(
+                        rx.vstack(
+                            rx.box(
+                                rx.drawer.close(rx.icon("x", size=30)),
+                                width="100%",
+                            ),
+                            sidebar_items(),
+                            rx.spacer(),
+                            rx.vstack(
+                                sidebar_item("Help & Support",
+                                             "life-buoy", "/#"),
+                                rx.divider(margin="0"),
+                                rx.hstack(
+                                    rx.icon_button(
+                                        rx.icon("user"), size="3", radius="full"
+                                    ),
+                                    rx.vstack(
+                                        rx.box(
+                                            rx.text(
+                                                "My account", size="3", weight="bold"
+                                            ),
+                                            rx.text(
+                                                "user@reflex.dev",
+                                                size="2",
+                                                weight="medium",
+                                            ),
+                                            width="100%",
+                                        ),
+                                        spacing="0",
+                                        justify="start",
+                                        width="100%",
+                                    ),
+                                    padding_x="0.5rem",
+                                    align="center",
+                                    justify="start",
+                                    width="100%",
+                                ),
+                                width="100%",
+                                spacing="5",
+                            ),
+                            spacing="5",
+                            width="100%",
+                        ),
+                        top="auto",
+                        right="auto",
+                        height="100%",
+                        width="20em",
+                        padding="1.5em",
+                        bg=rx.color("accent", 2),
+                    ),
+                    width="100%",
+                ),
+                direction="left",
+            ),
+            padding="1em",
+        ),
+    )
+
+
+def my_table() -> rx.Component:
+    return rx.table.root(
+
+        rx.table.header(
+            rx.table.row(
+                rx.table.column_header_cell("Name"),
+                rx.table.column_header_cell("Email"),
+                rx.table.column_header_cell("Gender"),
+            ),
+        ),
+        rx.table.body(
+            rx.foreach(State.users, show_user),
+        ),
+        counter(),
+        variant="surface",
+        size="3"
+    )
 
 
 def index() -> rx.Component:
-    # Welcome Page (Index)
-    return rx.container(
-        rx.color_mode.button(position="top-right"),
-        rx.vstack(
-            rx.heading("Welcome to Reflex!", size="9"),
-            rx.text(
-                "Get started by editing ",
-                rx.code(f"{config.app_name}/{config.app_name}.py"),
-                size="5",
-            ),
-            rx.link(
-                rx.button("Check out our docs!"),
-                href="https://reflex.dev/docs/getting-started/introduction/",
-                is_external=True,
-            ),
-            spacing="5",
-            justify="center",
-            min_height="85vh",
-        ),
+    return rx.flex(
+        rx.hstack(
+            sidebar_top_profile(),
+            my_table(),
+        )
     )
 
 
