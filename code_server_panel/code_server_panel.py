@@ -1,4 +1,8 @@
 import reflex as rx
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi_radar import Radar
+from sqlalchemy import create_engine
 
 
 class SidebarState(rx.State):
@@ -39,6 +43,7 @@ class RBACState(rx.State):
         self.users_count = ""
         self.edit_id = ""
         self.is_editing = False
+        self.show_form = False
 
     @rx.event
     def add_role(self):
@@ -437,5 +442,42 @@ def index() -> rx.Component:
     return dashboard()
 
 
-app = rx.App()
+# Create FastAPI app
+fastapi_app = FastAPI()
+engine = create_engine("sqlite:///./app.db")
+
+# Full monitoring with SQL query tracking
+radar = Radar(fastapi_app, db_engine=engine)
+radar.create_tables()
+
+
+@fastapi_app.get("/api/health")
+async def health_check():
+    """Health check endpoint"""
+    return JSONResponse({"status": "healthy", "service": "code-server-panel"})
+
+
+@fastapi_app.get("/api/roles")
+async def get_roles():
+    """Get all RBAC roles"""
+    # In a real app, this would fetch from a database
+    return JSONResponse({
+        "roles": [
+            {"id": "1", "role": "Admin", "permissions": "Full Access", "users": "5"},
+            {"id": "2", "role": "Editor", "permissions": "Read, Write", "users": "12"},
+            {"id": "3", "role": "Viewer", "permissions": "Read Only", "users": "25"},
+            {"id": "4", "role": "Manager",
+                "permissions": "Read, Write, Approve", "users": "8"},
+        ]
+    })
+
+
+@fastapi_app.post("/api/roles")
+async def create_role(role: dict):
+    """Create a new RBAC role"""
+    return JSONResponse({"message": "Role created", "role": role})
+
+
+# Mount the FastAPI router to Reflex's underlying FastAPI app
+app = rx.App(api_transformer=fastapi_app)
 app.add_page(index)
